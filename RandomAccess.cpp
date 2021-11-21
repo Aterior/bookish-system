@@ -51,6 +51,8 @@ int main() {
   float_v tmp;
   //TODO gather data with indices "index" from the array "input" into float_v tmp
   // Use void  gather (const float *array, const uint_v &indexes)
+  uint_v &tmp_index=reinterpret_cast<uint_v&>(index);
+  tmp.gather(input, tmp_index);
 
   
   //check results
@@ -66,7 +68,9 @@ int main() {
   float_v tmp2;
   //TODO gather data with indices "index" from the array "input" into float_v tmp2, if the value of "input" large then 0.5
   // Use void  gather (const float *array, const uint_v &indexes, const float_m &mask)
-
+  uint_v &tmp_index2=reinterpret_cast<uint_v&>(index);
+  const float_m mask = (input > 0.5);
+  tmp2.gather(input, tmp_index2, mask);
   
   //check results
   ok = 1;
@@ -91,6 +95,9 @@ int main() {
   //TODO create mask for values for an obtained tmp values, which are large than 0.5 and
   //TODO put all values smaller than 0.5 from tmp to the array "output" at the places given by indices "index"
   // Use void scatter (float *array, const uint_v &indexes, const float_m &mask) const
+  float_m mask2 = (tmp > 0.5);
+  uint_v &tmp_index3=reinterpret_cast<uint_v&>(index);
+  tmp.scatter(output, tmp_index3, !mask);
 
     //check results
   ok = 1;
