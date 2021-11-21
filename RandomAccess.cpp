@@ -47,7 +47,7 @@ int main() {
     cout << index[i] << " ";
   cout << endl;
   
-    /// gather without masking
+    /// gather without masking.
   float_v tmp;
   //TODO gather data with indices "index" from the array "input" into float_v tmp
   // Use void  gather (const float *array, const uint_v &indexes)
