@@ -50,11 +50,10 @@ int main() {
     /// gather without masking.
   float_v tmp;
   //TODO gather data with indices "index" from the array "input" into float_v tmp
-  // Use void  gather (const float *array, const uint_v &indexes)
-  uint_v &tmp_index=reinterpret_cast<uint_v&>(index);
+  // Use void gather (const float *array, const uint_v &indexes)
+  uint_v &tmp_index = reinterpret_cast<uint_v&>(index);
   tmp.gather(input, tmp_index);
 
-  
   //check results
   bool ok = 1;
   for(int i=0; i<float_v::Size; i++) {
@@ -98,7 +97,7 @@ int main() {
   float_m mask2 = (tmp < 0.5f);
   tmp.scatter(output, tmp_index, mask2);
 
-    //check results
+  //check results
   ok = 1;
   for(int i=0; i<float_v::Size; i++) {
     if( tmp[i] < 0.5f ) {
