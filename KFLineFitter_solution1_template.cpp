@@ -17,6 +17,10 @@
 #include <cmath>
 #include <vector>
 
+#ifdef SIMDIZED
+#include "../../../vectors/P4_F32vec4.h"
+#endif
+
 #ifdef TIME
 #include "../../../TStopwatch.h"
 #endif
@@ -363,6 +367,7 @@ const int AmountHits = tracks[0].hits.size();
    for(int i = 0; i < NVTracks; ++i){
      LFTrack<fvec, fvec> &vtrack = vTracks[i];
      fit.Fit( vtrack );
+   }
 
 #ifdef TIME
   timer.Stop();
