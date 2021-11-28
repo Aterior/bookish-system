@@ -5,7 +5,7 @@
   /// 
   /// use "g++ KFLineFitter_solution1_template.cpp -O3; ./a.out" to run
  
-//#define SIMDIZED // uncomment this for vectorized code. Scalar code is default.
+#define SIMDIZED // uncomment this for vectorized code. Scalar code is default.
 #define OUTPUT // output reconstruction results
 #define TIME // count time
 
@@ -334,21 +334,59 @@ int main(){
   LFTrack<fvec,fvec> vTracks[NVTracks];
   
   // TODO: Copy scalar tracks into simd
+const int AmountHits = tracks[0].hits.size();
+
+  for(int i = 0; i < NVTracks; ++i){
+    LFTrack<fvec, fvec> &vTrack = vTracks[i];
+    vTrack.hits.resize(AmountHits);
+    vTrack.mcPoints.resize(AmountHits);
+    for(int ifL = 0; i < fvecLen; ++ifL){
+      const LFTrack <float, int> &ttrack = tracks[i*fvecLen + ifL];
+      for(int iHits = 0; iHits < AmountHits; ++iHits){
+        vTrack.hits[iHits].x[i] = ttrack.hits[iHits].x;
+        vTrack.hits[iHits].z = ttrack.hits[iHits].z;
+      }
+      vTrack.mcPoints[AmountHits-1].z = ttrack.mcPoints[AmountHits-1].z;
+    }
+  }
 
     // fit
   // TODO: Create SIMDized-fitter
-  
+  LFFitter <fvec, fvec> fit;
+  fit.SetSigma(Sigma);
+
 #ifdef TIME
   timer.Start(1);
 #endif
+
    // TODO: fit tracks
+   for(int i = 0; i < NVTracks; ++i){
+     LFTrack<fvec, fvec> &vtrack = vTracks[i];
+     fit.Fit( vtrack );
+     //fit.Fit( vTracks[i] );
+
 #ifdef TIME
   timer.Stop();
 #endif
   
     // Convert  SIMD-tracks to scalar Tracks
   // TODO: Copy simd tracks into scalar
-  
+  for(int j = 0; j < NVTracks; ++j){
+    const LFTrack<fvec, fvec> &vTrack = vTracks[j];
+    for(int jfL = 0; jfL < fvecLen; ++jfL){
+      LFTrack<float, int> &ttrack = tracks[j * fvecLen + jfL];
+      for(int jHit = 0; jHit < 2; ++jHit){
+        ttrack.rParam.p[jHit] = vTrack.rParam.p[jHit][j];
+      }
+      ttrack.rParam.z = vTrack.rParam.z;
+      for(int jCM = 0; jCM < 3; ++jCM){
+        ttrack.rCovMatrix.c[jCM] = vTrack.rCovMatrix.c[jCM][j];
+      }
+      ttrack.chi2 = vTrack.chi2[j];
+      ttrack.ndf = vTrack.ndf[j];
+    }
+  }
+
 #endif // SIMDIZED
     
       /// ---- SAVE RESULTS ---
