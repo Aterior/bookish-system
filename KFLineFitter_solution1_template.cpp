@@ -347,7 +347,7 @@ const int AmountHits = tracks[0].hits.size();
     for(int ifL = 0; ifL < fvecLen; ++ifL){
       const LFTrack <float, int> &ttrack = tracks[i*fvecLen + ifL];
       for(int iHits = 0; iHits < AmountHits; ++iHits){
-        vTrack.hits[iHits].x[i] = ttrack.hits[iHits].x;
+        vTrack.hits[iHits].x[ifL] = ttrack.hits[iHits].x;
         vTrack.hits[iHits].z = ttrack.hits[iHits].z;
       }
       vTrack.mcPoints[AmountHits-1].z = ttrack.mcPoints[AmountHits-1].z;
