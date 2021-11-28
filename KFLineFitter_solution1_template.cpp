@@ -363,7 +363,6 @@ const int AmountHits = tracks[0].hits.size();
    for(int i = 0; i < NVTracks; ++i){
      LFTrack<fvec, fvec> &vtrack = vTracks[i];
      fit.Fit( vtrack );
-     //fit.Fit( vTracks[i] );
 
 #ifdef TIME
   timer.Stop();
