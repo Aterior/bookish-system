@@ -380,14 +380,14 @@ const int AmountHits = tracks[0].hits.size();
     for(int jfL = 0; jfL < fvecLen; ++jfL){
       LFTrack<float, int> &ttrack = tracks[j * fvecLen + jfL];
       for(int jHit = 0; jHit < 2; ++jHit){
-        ttrack.rParam.p[jHit] = vTrack.rParam.p[jHit][j];
+        ttrack.rParam.p[jHit] = vTrack.rParam.p[jHit][jfL];
       }
       ttrack.rParam.z = vTrack.rParam.z;
       for(int jCM = 0; jCM < 3; ++jCM){
-        ttrack.rCovMatrix.c[jCM] = vTrack.rCovMatrix.c[jCM][j];
+        ttrack.rCovMatrix.c[jCM] = vTrack.rCovMatrix.c[jCM][jfL];
       }
-      ttrack.chi2 = vTrack.chi2[j];
-      ttrack.ndf = vTrack.ndf[j];
+      ttrack.chi2 = vTrack.chi2[jfL];
+      ttrack.ndf = vTrack.ndf[jfL];
     }
   }
 
