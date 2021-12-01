@@ -26,10 +26,10 @@ void FittingDemoSimple_0() {
    
    TCanvas *c1 = new TCanvas("c1","Fitting Demo",10,10,700,500);
    
-   TH1F *histo = new TH1F("histo", "Quadratic Background",60,0,3);
+   TH1F *histo = new TH1F("histo", "Quadratic Background",nBins,0,3);
 
    TRandom3 rand;
-   for(int i=0; i < 1000;  i++) histo->Fill( (rand.Uniform()+rand.Uniform())*1.5 ); // fill with triangular distribution
+   for(int i=0; i < 1000000;  i++) histo->Fill( ( rand.Uniform()*0.5 + rand.Uniform())*1.5 ); // fill with triangular distribution
    
      // create a TF1 with the range from 0 to 3 and 3 parameters
    TF1 *fitFcn = new TF1("fitFcn",fitFunction,0,3,3);
