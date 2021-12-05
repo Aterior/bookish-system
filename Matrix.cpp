@@ -3,11 +3,10 @@
   /// @authors: I.Kulakov; M.Zyzak
   /// @e-mail I.Kulakov@gsi.de; M.Zyzak@gsi.de
   /// 
-  /// use "g++ Matrix.cpp -O3 -lVc; ./a.out" to run
+  /// use "g++ Matrix.cpp -O3 -fopenmp -o mat -lVc; ./mat" to run
 
-// Finish SIMDized Vc version. Compare results and time.
+// Parallelize the SIMDized version between cores isng OpenMP. Compare the results and time.
 
-#include "../../../vectors/P4_F32vec4.h" // overloading of the SSE instruction
 #include "../../../TStopwatch.h"
 
 #include <Vc/Vc>
@@ -17,7 +16,7 @@ using namespace Vc;
 using namespace std;
 
 #include <stdlib.h> // rand
-
+#include <omp.h>
 
 const int N = 1000; // matrix size. Has to be dividable by 4.
 
@@ -26,12 +25,7 @@ const int NIter = 100; // repeat calculations many times in order to neglect mem
 float a[N][N] __attribute__ ((aligned(16)));
 float c[N][N] __attribute__ ((aligned(16)));
 float c_simd[N][N] __attribute__ ((aligned(16)));
-float c_simdVc[N][N] __attribute__ ((aligned(16)));
-
-template<typename T> // required calculations
-T f(T x) {
-  return sqrt(x);
-}
+float c_omp[N][N] __attribute__ ((aligned(16)));
 
 void CheckResults(const float a1[N][N], const float a2[N][N])
 {
@@ -61,44 +55,50 @@ int main() {
   for( int ii = 0; ii < NIter; ii++ )
     for( int i = 0; i < N; i++ ) {
       for( int j = 0; j < N; j++ ) {
-        c[i][j] = f(a[i][j]);
+        c[i][j] = sqrt(a[i][j]);
       }
     }
   timerScalar.Stop();
   
-    /// SIMD VECTORS
-  TStopwatch timerSIMD;
-  for( int ii = 0; ii < NIter; ii++ )
-    for( int i = 0; i < N; i++ ) {
-      for( int j = 0; j < N; j+=fvecLen ) {
-          fvec &aVec = (reinterpret_cast<fvec&>(a[i][j]));
-          fvec &cVec = (reinterpret_cast<fvec&>(c_simd[i][j]));
-          cVec = f(aVec);
-      }
-    }
-  timerSIMD.Stop();
-
    /// Vc
   TStopwatch timerVc;
-  //TODO write the code using Vc
   for( int ii = 0; ii < NIter; ii++ )
-   for( int i = 0; i < N; i++ ) {
-     for( int j = 0; j < N; j+=float_v::Size ) {
-         float_v &aVec = (reinterpret_cast<float_v&>(a[i][j]));
-         float_v &cVec = (reinterpret_cast<float_v&>(c_simdVc[i][j]));
-         cVec = f(aVec); 
+    for( int i = 0; i < N; i++ ) {
+      for( int j = 0; j < N; j+=float_v::Size ) {
+          float_v &aVec = (reinterpret_cast<float_v&>(a[i][j]));
+          float_v &cVec = (reinterpret_cast<float_v&>(c_simd[i][j]));
+          cVec = sqrt(aVec);
+      }
+    }
   timerVc.Stop();
   
+   ///OpenMP
+  TStopwatch timerOMP;
+  #pragma omp parallel for num_threads(omp_get_num_procs())
+  for( int ii = 0; ii < NIter; ii++ ) // repeat several times to improve time measurement precision
+  {
+    #pragma omp parallel for num_threads(omp_get_num_procs())
+    //TODO modify the code below using OpenMP
+    for( int i = 0; i < N; i++ ) {
+      for( int j = 0; j < N; j+=float_v::Size ) {
+          float_v &aVec = (reinterpret_cast<float_v&>(a[i][j]));
+          float_v &cVec = (reinterpret_cast<float_v&>(c_omp[i][j]));
+          cVec = sqrt(aVec);
+      }
+    }
+  }
+  timerOMP.Stop();
+  
   double tScal  = timerScalar.RealTime()*1000;
-  double tSIMD1 = timerSIMD.RealTime()*1000;
   double tVc    = timerVc.RealTime()*1000;
+  double tOMP   = timerOMP.RealTime()*1000;
   
   cout << "Time scalar:  " << tScal << " ms " << endl;
-  cout << "Time headers: " << tSIMD1 << " ms, speed up " << tScal/tSIMD1 << endl;
   cout << "Time Vc:      " << tVc << " ms, speed up " << tScal/tVc << endl;
-
+  cout << "Time OpenMP:  " << tOMP << " ms, speed up " << tScal/tOMP << endl;
+  
   CheckResults(c,c_simd);
-  CheckResults(c,c_simdVc);
+  CheckResults(c,c_omp);
 
   return 1;
 }
